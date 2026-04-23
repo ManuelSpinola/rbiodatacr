@@ -1,13 +1,23 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
 
 # rbiodatacr
 
 <!-- badges: start -->
-
 [![R-CMD-check](https://github.com/ManuelSpinola/rbiodatacr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ManuelSpinola/rbiodatacr/actions/workflows/R-CMD-check.yaml)
-[![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
 `rbiodatacr` es un cliente R para consultar
@@ -18,44 +28,44 @@ Técnica de CONAGEBIO. Desarrollado en el marco de la consultoría IUCN
 
 ## Instalación
 
-``` r
+```r
 remotes::install_github("ManuelSpinola/rbiodatacr")
 ```
 
 ## Funciones principales
 
-| Función                    | Descripción                                   |
-|----------------------------|-----------------------------------------------|
-| `bdcr_count()`             | Cuenta registros disponibles para un taxón    |
-| `bdcr_count_batch()`       | Cuenta registros para varios taxones          |
-| `bdcr_occurrences()`       | Descarga registros de ocurrencia de un taxón  |
-| `bdcr_occurrences_batch()` | Descarga registros para varios taxones        |
-| `bdcr_species_search()`    | Busca información taxonómica en el índice BIE |
-| `bdcr_quality_check()`     | Evalúa calidad de registros y asigna flags    |
+| Función | Descripción |
+|---|---|
+| `bdcr_count()` | Cuenta registros disponibles para un taxón |
+| `bdcr_count_batch()` | Cuenta registros para varios taxones |
+| `bdcr_occurrences()` | Descarga registros de ocurrencia de un taxón |
+| `bdcr_occurrences_batch()` | Descarga registros para varios taxones |
+| `bdcr_species_search()` | Busca información taxonómica en el índice BIE |
+| `bdcr_quality_check()` | Evalúa calidad de registros y asigna flags |
 
 ## Uso básico
 
-``` r
+```{r ejemplo-count, eval = FALSE}
 library(rbiodatacr)
 
 # Verificar disponibilidad de datos
 bdcr_count("Panthera onca")
 ```
 
-``` r
+```{r ejemplo-ocurrencias, eval = FALSE}
 # Descargar registros de ocurrencia
 df <- bdcr_occurrences("Panthera onca", rows = 50)
 dplyr::glimpse(df)
 ```
 
-``` r
+```{r ejemplo-lote, eval = FALSE}
 # Consulta para varias especies
 especies <- c("Tapirus bairdii", "Panthera onca", "Ara ambiguus")
 conteos  <- bdcr_count_batch(especies)
 conteos
 ```
 
-``` r
+```{r ejemplo-calidad, eval = FALSE}
 # Control de calidad
 df_qc <- bdcr_quality_check(df)
 dplyr::count(df_qc, quality_flag, sort = TRUE)
@@ -63,7 +73,7 @@ dplyr::count(df_qc, quality_flag, sort = TRUE)
 
 ## Flujo de trabajo completo
 
-``` r
+```{r flujo-completo, eval = FALSE}
 library(rbiodatacr)
 library(dplyr)
 
@@ -96,8 +106,8 @@ df_final |>
 
 ## Sobre BIODATACR
 
-BIODATACR está construido sobre la infraestructura del [Atlas of Living
-Australia (ALA)](https://www.ala.org.au/).
+BIODATACR está construido sobre la infraestructura del
+[Atlas of Living Australia (ALA)](https://www.ala.org.au/).
 
 ## Licencia
 
