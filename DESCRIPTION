@@ -15,7 +15,7 @@ Description: Provides functions to query occurrence records, species
     the IUCN consultancy Enlazando el Paisaje Centroamericano.
 License: MIT + file LICENSE
 Encoding: UTF-8
-URL: https://github.com/ManuelSpinola/rbiodatacr
+URL: https://github.com/ManuelSpinola/rbiodatacr, https://manuelspinola.github.io/rbiodatacr/
 BugReports: https://github.com/ManuelSpinola/rbiodatacr/issues
 Suggests: 
     CoordinateCleaner,

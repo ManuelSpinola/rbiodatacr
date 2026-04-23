@@ -15,8 +15,14 @@ execute:
 
 ## Sobre este documento
 
-Cuaderno de desarrollo del paquete `rbiodatacr`. Registra decisiones técnicas, pruebas de API, y ejemplos reales de uso en el contexto del proyecto IUCN *Enlazando el Paisaje Centroamericano* — Fase 1: 
+Cuaderno de desarrollo del paquete `rbiodatacr`. Registra decisiones
+técnicas, pruebas de API, y ejemplos reales de uso en el contexto del
+proyecto IUCN *Enlazando el Paisaje Centroamericano* — Fase 1:
 Selección y priorización de especies para Costa Rica.
+
+El código fuente de las funciones vive en los archivos `R/`. Este
+cuaderno documenta el *por qué* de cada decisión de diseño y registra
+las pruebas realizadas durante el desarrollo.
 
 ---
 
@@ -49,9 +55,9 @@ usethis::use_git()
 
 ### Dependencias
 
-Las dependencias se declaran en `DESCRIPTION` mediante `usethis::use_package()`.
-Las de `Imports` son requeridas en tiempo de ejecución; las de `Suggests` son
-opcionales (tests, documentación, limpieza de coordenadas).
+Las dependencias se declaran en `DESCRIPTION` mediante
+`usethis::use_package()`. Las de `Imports` son requeridas en tiempo de
+ejecución; las de `Suggests` son opcionales.
 
 ```{r}
 usethis::use_package("httr")        # peticiones HTTP
@@ -60,446 +66,172 @@ usethis::use_package("dplyr")       # manipulación de tablas
 usethis::use_package("purrr")       # iteración funcional (batch)
 usethis::use_package("cli")         # mensajes de error con formato
 
-usethis::use_package("CoordinateCleaner", type = "Suggests")  # limpieza de coords
-usethis::use_package("testthat",          type = "Suggests")  # tests unitarios
-usethis::use_package("knitr",             type = "Suggests")  # vignettes
-usethis::use_package("rmarkdown",         type = "Suggests")  # vignettes
+usethis::use_package("CoordinateCleaner", type = "Suggests")
+usethis::use_package("testthat",          type = "Suggests")
+usethis::use_package("knitr",             type = "Suggests")
+usethis::use_package("rmarkdown",         type = "Suggests")
 ```
 
 ---
 
 ## 2. Infraestructura interna: `R/utils.R`
 
-`utils.R` contiene funciones internas que nunca se exportan al usuario.
-Son la "fontanería" del paquete: cualquier función pública de
-`occurrences.R`, `species.R` o `quality.R` las llama por debajo.
+Este archivo contiene funciones internas que **no se exportan** al
+usuario. Son la "fontanería" del paquete — todas las funciones públicas
+las usan por debajo.
 
-**¿Por qué centralizar aquí?**  
-Si el servidor de BIODATACR cambia de URL, o si se necesita ajustar el
-manejo de errores HTTP, basta con editar un único archivo en lugar de
-repetir el cambio en cada función del paquete.
+| Función | Rol |
+|---|---|
+| `BDCR_BASE_URL` | URL raíz del servidor de ocurrencias (biocache) |
+| `BDCR_BIE_URL` | URL raíz del servidor de especies (bie-index) |
+| `bdcr_url()` | Construye la URL completa para endpoints de biocache |
+| `bdcr_GET()` | Único punto de entrada HTTP: maneja red, código HTTP y JSON |
+| `bdcr_polite_wait()` | Pausa entre consultas en lote |
+| `bdcr_check_string()` | Valida que un argumento sea character no vacío |
+| `bdcr_check_count()` | Valida que un argumento sea entero positivo |
 
-### 2.1 URL base
+**Dos servidores distintos:** BIODATACR expone dos servicios separados.
+El servidor `biocache` maneja registros de ocurrencia; el servidor
+`bie-index` maneja el índice taxonómico. Por eso existen dos constantes
+de URL en lugar de una sola.
 
-Toda comunicación con BIODATACR parte del mismo endpoint raíz.
-`bdcr_url()` lo combina con la ruta específica de cada consulta.
+**Decisiones clave en `bdcr_GET()`:**
 
-```{r}
-# Constante centralizada — si cambia el servidor, se edita aquí
-BDCR_BASE_URL <- "http://datos.biodiversidad.go.cr/biocache-service"
+- Se usa `httr::content(resp, as = "text", encoding = "UTF-8")` para
+  obtener el JSON como texto. La variable resultante debe pasarse con
+  su nombre exacto (`raw_text`) a `fromJSON()` — un nombre incorrecto
+  produce un error críptico de parseo.
+- Se usa `jsonlite::fromJSON(raw_text, simplifyVector = TRUE)` para que
+  los campos tabulares de la respuesta lleguen directamente como
+  `data.frame`, lo que simplifica el parseo en las funciones públicas.
 
-#' @noRd
-bdcr_url <- function(endpoint) {
-  paste0(BDCR_BASE_URL, "/", endpoint)
-}
-
-# Ejemplo de resultado:
-# bdcr_url("occurrences/search")
-# → "http://datos.biodiversidad.go.cr/biocache-service/occurrences/search"
-```
-
-### 2.2 Cliente HTTP: `bdcr_GET()`
-
-Único punto de entrada HTTP del paquete. Concentra tres
-responsabilidades que de otro modo se repetirían en cada función:
-
-1. Manejo de errores de red (sin internet, timeout)
-2. Verificación del código HTTP (solo 200 es válido)
-3. Parseo de la respuesta JSON
+### Verificación
 
 ```{r}
-#' @noRd
-bdcr_GET <- function(url, query = list(), timeout = 60) {
-
-  # 1. Petición — captura errores de red antes de que propaguen
-  resp <- tryCatch(
-    httr::GET(
-      url,
-      query = query,
-      httr::timeout(timeout),
-      httr::user_agent(
-        "rbiodatacr/0.1.0 (https://github.com/ManuelSpinola/rbiodatacr)"
-      )
-    ),
-    error = function(e) {
-      cli::cli_abort(
-        c("No se pudo conectar con BIODATACR.",
-          "i" = "Verifique su conexión a internet.",
-          "x" = conditionMessage(e)),
-        call = NULL
-      )
-    }
-  )
-
-  # 2. Verificar código HTTP
-  status <- httr::status_code(resp)
-  if (status != 200L) {
-    cli::cli_abort(
-      c("El servidor de BIODATACR retornó HTTP {status}.",
-        "i" = "URL consultada: {url}"),
-      call = NULL
-    )
-  }
-
-  # 3. Parsear JSON
-  raw <- httr::content(resp, as = "text", encoding = "UTF-8")
-  tryCatch(
-    jsonlite::fromJSON(raw, simplifyVector = FALSE),
-    error = function(e) {
-      cli::cli_abort(
-        c("No se pudo parsear la respuesta JSON.",
-          "x" = conditionMessage(e)),
-        call = NULL
-      )
-    }
-  )
-}
-```
-
-### 2.3 Pausa de cortesía: `bdcr_polite_wait()`
-
-En consultas en lote (`_batch`) se llama entre cada petición para no
-saturar el servidor. El valor por defecto de 1 segundo es el mínimo
-recomendado para APIs públicas.
-
-```{r}
-#' @noRd
-bdcr_polite_wait <- function(seconds = 1) {
-  Sys.sleep(seconds)
-}
-```
-
-### 2.4 Validación de argumentos
-
-Dos funciones de validación que se llaman al inicio de cada función
-pública, antes de hacer cualquier petición HTTP.
-
-```{r}
-# Verifica que el argumento sea un character de longitud 1 no vacío
-# Uso: bdcr_check_string(taxon, "taxon")
-#' @noRd
-bdcr_check_string <- function(x, arg = deparse(substitute(x))) {
-  if (!is.character(x) || length(x) != 1L || nchar(trimws(x)) == 0L) {
-    cli::cli_abort(
-      "{.arg {arg}} debe ser un character de longitud 1 no vacío.",
-      call = NULL
-    )
-  }
-  invisible(x)
-}
-
-# Verifica que el argumento sea un entero positivo
-# Uso: bdcr_check_count(rows, "rows")
-#' @noRd
-bdcr_check_count <- function(x, arg = deparse(substitute(x))) {
-  if (!is.numeric(x) || length(x) != 1L || x < 1L || x != as.integer(x)) {
-    cli::cli_abort(
-      "{.arg {arg}} debe ser un entero positivo.",
-      call = NULL
-    )
-  }
-  invisible(as.integer(x))
-}
-```
-
-### 2.5 Verificación
-
-```{r}
-# Cargar el paquete en desarrollo y verificar que no hay errores de sintaxis
 devtools::load_all()
-
-# Verificar que las funciones internas son accesibles (no exportadas)
-# rbiodatacr:::bdcr_url("occurrences/search")
-# rbiodatacr:::bdcr_check_string("Panthera onca")
 ```
 
 ---
 
 ## 3. Ocurrencias: `R/occurrences.R`
 
-Las funciones de este archivo consultan el endpoint
-`occurrences/search` de BIODATACR. Devuelven `tibble`s con los campos
-más relevantes para análisis de biodiversidad.
+Este archivo contiene 4 funciones que consultan el endpoint
+`occurrences/search` del servidor biocache.
 
-### 3.1 Contar registros: `bdcr_count()`
+| Función | Descripción |
+|---|---|
+| `bdcr_count()` | Cuenta registros disponibles para un taxón |
+| `bdcr_occurrences()` | Descarga registros de un taxón como tibble |
+| `bdcr_count_batch()` | Cuenta registros para varios taxones |
+| `bdcr_occurrences_batch()` | Descarga registros para varios taxones |
 
-La función más simple: solo devuelve el número total de registros para
-una especie. Útil para explorar la disponibilidad de datos antes de
-descargar todo.
+**Decisiones descubiertas al probar el API:**
 
-```{r}
-#' Contar registros de ocurrencia para un taxón
-#'
-#' @param taxon Character. Nombre científico del taxón (e.g. `"Panthera onca"`).
-#' @return Entero con el número total de registros.
-#' @export
-#' @examples
-#' \dontrun{
-#' bdcr_count("Panthera onca")
-#' }
-bdcr_count <- function(taxon) {
-  bdcr_check_string(taxon, "taxon")
-  url  <- bdcr_url("occurrences/search")
-  resp <- bdcr_GET(url, query = list(q = paste0("taxon_name:", taxon), rows = 0))
-  resp[["totalRecords"]]
-}
-```
+- La query correcta es `q = "Panthera onca"` **sin prefijo de campo**.
+  El prefijo `taxon_name:` no es reconocido y devuelve registros de
+  taxones incorrectos.
+- El parámetro correcto para controlar el número de registros es
+  `pageSize`, **no** `rows`. Con `rows` el servidor devuelve siempre
+  10 registros independientemente del valor solicitado.
+- El API devuelve `occurrences` como un `data.frame` de 55 columnas
+  con `simplifyVector = TRUE`. Se seleccionan solo 14 campos relevantes
+  para análisis de biodiversidad.
+- Los campos `assertions` y `speciesGroups` son listas anidadas y se
+  excluyen del tibble de salida para mantenerlo rectangular.
+- Los campos `geospatialKosher` y `taxonomicKosher` llegan como
+  `character` (`"true"`/`"false"`). Se convierten a `logical` con
+  `== "true"` dentro de `bdcr_occurrences()` para que
+  `bdcr_quality_check()` funcione correctamente.
+- El campo `coordinateUncertaintyInMeters` **no existe** en la
+  respuesta del API — no debe incluirse en el `select()`.
 
-### 3.2 Descargar ocurrencias: `bdcr_occurrences()`
-
-Descarga hasta `rows` registros de ocurrencia para un taxón y los
-devuelve como tibble. Los campos incluidos son los más relevantes para
-análisis espaciales y de calidad de datos.
-
-```{r}
-#' Descargar registros de ocurrencia de BIODATACR
-#'
-#' @param taxon  Character. Nombre científico del taxón.
-#' @param rows   Entero. Número máximo de registros a descargar. Default 100.
-#' @param start  Entero. Registro desde el cual iniciar (paginación). Default 0.
-#'
-#' @return `tibble` con columnas: `scientificName`, `decimalLatitude`,
-#'   `decimalLongitude`, `coordinateUncertaintyInMeters`, `year`, `month`,
-#'   `basisOfRecord`, `dataResourceName`, `geospatialKosher`, `taxonomicKosher`.
-#' @export
-#' @examples
-#' \dontrun{
-#' bdcr_occurrences("Tapirus bairdii", rows = 50)
-#' }
-bdcr_occurrences <- function(taxon, rows = 100, start = 0) {
-  bdcr_check_string(taxon, "taxon")
-  bdcr_check_count(rows,  "rows")
-
-  url  <- bdcr_url("occurrences/search")
-  resp <- bdcr_GET(
-    url,
-    query = list(
-      q     = paste0("taxon_name:", taxon),
-      rows  = rows,
-      start = start
-    )
-  )
-
-  occs <- resp[["occurrences"]]
-  if (length(occs) == 0) {
-    cli::cli_inform("No se encontraron registros para {.val {taxon}}.")
-    return(dplyr::tibble())
-  }
-
-  # Extraer campos clave de cada registro
-  campos <- c(
-    "scientificName", "decimalLatitude", "decimalLongitude",
-    "coordinateUncertaintyInMeters", "year", "month",
-    "basisOfRecord", "dataResourceName",
-    "geospatialKosher", "taxonomicKosher"
-  )
-
-  purrr::map(occs, function(occ) {
-    purrr::map(campos, ~ occ[[.x]] %||% NA) |>
-      stats::setNames(campos) |>
-      dplyr::as_tibble()
-  }) |>
-    dplyr::bind_rows()
-}
-```
-
-### 3.3 Descarga en lote: `bdcr_occurrences_batch()`
-
-Descarga ocurrencias para múltiples taxones con pausa entre consultas.
-Devuelve una lista nombrada de tibbles.
-
-```{r}
-#' Descargar ocurrencias para múltiples taxones
-#'
-#' @param taxa  Character vector. Nombres científicos.
-#' @param rows  Entero. Registros por taxón. Default 100.
-#' @param wait  Numeric. Segundos de pausa entre consultas. Default 1.
-#'
-#' @return Lista nombrada de tibbles (uno por taxón).
-#' @export
-#' @examples
-#' \dontrun{
-#' spp <- c("Tapirus bairdii", "Panthera onca", "Baird's tapir")
-#' datos <- bdcr_occurrences_batch(spp, rows = 50)
-#' }
-bdcr_occurrences_batch <- function(taxa, rows = 100, wait = 1) {
-  if (!is.character(taxa) || length(taxa) == 0) {
-    cli::cli_abort("{.arg taxa} debe ser un character vector no vacío.")
-  }
-  bdcr_check_count(rows, "rows")
-
-  resultados <- vector("list", length(taxa))
-  names(resultados) <- taxa
-
-  for (i in seq_along(taxa)) {
-    cli::cli_progress_step("Descargando {taxa[[i]]} ({i}/{length(taxa)})")
-    resultados[[i]] <- bdcr_occurrences(taxa[[i]], rows = rows)
-    if (i < length(taxa)) bdcr_polite_wait(wait)
-  }
-
-  resultados
-}
-```
-
-### 3.4 Contar en lote: `bdcr_count_batch()`
-
-Versión eficiente de `bdcr_count()` para múltiples taxones. Devuelve
-un tibble con una fila por taxón.
-
-```{r}
-#' Contar registros para múltiples taxones
-#'
-#' @param taxa Character vector. Nombres científicos.
-#' @param wait Numeric. Segundos de pausa entre consultas. Default 1.
-#'
-#' @return `tibble` con columnas `taxon` y `n_records`.
-#' @export
-#' @examples
-#' \dontrun{
-#' spp <- c("Tapirus bairdii", "Panthera onca")
-#' bdcr_count_batch(spp)
-#' }
-bdcr_count_batch <- function(taxa, wait = 1) {
-  if (!is.character(taxa) || length(taxa) == 0) {
-    cli::cli_abort("{.arg taxa} debe ser un character vector no vacío.")
-  }
-
-  conteos <- purrr::imap_dfr(taxa, function(sp, i) {
-    cli::cli_progress_step("Contando {sp} ({i}/{length(taxa)})")
-    n <- tryCatch(bdcr_count(sp), error = function(e) NA_integer_)
-    if (i < length(taxa)) bdcr_polite_wait(wait)
-    dplyr::tibble(taxon = sp, n_records = n)
-  })
-
-  conteos
-}
-```
-
-### 3.5 Prueba de las funciones de ocurrencias
+### Prueba
 
 ```{r}
 #| eval: false
 devtools::load_all()
 
-# Contar registros de jaguar
+# Contar registros disponibles
 bdcr_count("Panthera onca")
+# [1] 313
 
-# Descargar primeros 10 registros
-df_jaguar <- bdcr_occurrences("Panthera onca", rows = 10)
+# Descargar registros
+df_jaguar <- bdcr_occurrences("Panthera onca", rows = 50)
+nrow(df_jaguar)
 dplyr::glimpse(df_jaguar)
 
-# Lote de 3 especies
+# Verificar taxón correcto
+unique(df_jaguar$scientificName)
+
+# Verificar tipos lógicos
+class(df_jaguar$geospatialKosher)  # "logical"
+class(df_jaguar$taxonomicKosher)   # "logical"
+
+# Consultas en lote
 spp <- c("Tapirus bairdii", "Panthera onca", "Ara ambiguus")
-conteos <- bdcr_count_batch(spp)
-conteos
+bdcr_count_batch(spp)
 ```
 
 ---
 
 ## 4. Búsqueda de especies: `R/species.R`
 
-Consulta el endpoint de especies de BIODATACR para obtener información
-taxonómica básica: nombre aceptado, clasificación, y número de
-registros disponibles.
+Contiene `bdcr_species_search()`, que consulta el endpoint `/search`
+del servidor `bie-index` para obtener información taxonómica.
 
-```{r}
-#' Buscar información taxonómica de una especie en BIODATACR
-#'
-#' @param name  Character. Nombre científico (puede ser sinónimo o nombre parcial).
-#' @param rows  Entero. Número máximo de resultados. Default 10.
-#'
-#' @return `tibble` con columnas: `name`, `guid`, `commonName`,
-#'   `scientificName`, `rank`, `family`, `occurrenceCount`.
-#' @export
-#' @examples
-#' \dontrun{
-#' bdcr_species_search("Panthera onca")
-#' }
-bdcr_species_search <- function(name, rows = 10) {
-  bdcr_check_string(name, "name")
-  bdcr_check_count(rows, "rows")
+**Decisiones descubiertas al probar el API:**
 
-  url  <- bdcr_url("search")
-  resp <- bdcr_GET(url, query = list(q = name, rows = rows))
+- El endpoint correcto es `bie-index/search`, **no**
+  `biocache-service/search`. Este último devuelve 404.
+- La respuesta viene como `data.frame` directamente — no hay que
+  parsear resultado por resultado.
+- Los campos `kingdom`, `occurrenceCount` y `commonName` existen en
+  el esquema pero el servidor los devuelve vacíos para la mayoría de
+  especies. Se excluyen del tibble de salida.
+- La función puede devolver más de una fila por búsqueda cuando hay
+  tanto la especie como subespecies registradas. Por ejemplo,
+  `"Panthera onca"` devuelve 2 filas: la especie y la subespecie
+  *centralis*.
+- El campo `guid` es el identificador único del concepto taxonómico
+  en el sistema. No cambia aunque el nombre científico sea actualizado
+  por revisiones taxonómicas.
 
-  resultados <- resp[["searchResults"]][["results"]]
-  if (is.null(resultados) || length(resultados) == 0) {
-    cli::cli_inform("No se encontraron resultados taxonómicos para {.val {name}}.")
-    return(dplyr::tibble())
-  }
-
-  campos <- c("name", "guid", "commonName", "scientificName",
-              "rank", "family", "occurrenceCount")
-
-  purrr::map(resultados, function(r) {
-    purrr::map(campos, ~ r[[.x]] %||% NA) |>
-      stats::setNames(campos) |>
-      dplyr::as_tibble()
-  }) |>
-    dplyr::bind_rows()
-}
-```
-
-### 4.1 Prueba de búsqueda de especies
+### Prueba
 
 ```{r}
 #| eval: false
 devtools::load_all()
 
+bdcr_species_search("Panthera onca")
 bdcr_species_search("Tapirus bairdii")
-bdcr_species_search("danta")   # nombre común
 ```
 
 ---
 
 ## 5. Calidad de datos: `R/quality.R`
 
-`bdcr_quality_check()` toma un tibble de ocurrencias (salida de
-`bdcr_occurrences()`) y agrega una columna `quality_flag` que resume
-los problemas más comunes: coordenadas ausentes, incertidumbre alta,
-registros fuera de rango taxonómico, y año inusual.
+Contiene `bdcr_quality_check()`, que toma un tibble de ocurrencias
+(salida de `bdcr_occurrences()`) y agrega una columna `quality_flag`.
 
-```{r}
-#' Verificar calidad de registros de ocurrencia
-#'
-#' Agrega una columna `quality_flag` al tibble de ocurrencias.
-#' Los flags posibles son: `"ok"`, `"no_coords"`, `"high_uncertainty"`,
-#' `"taxonomic_issue"`, `"old_record"`.
-#'
-#' @param df             `tibble` de ocurrencias (salida de `bdcr_occurrences()`).
-#' @param max_uncertainty Numeric. Umbral en metros para coordenadas imprecisas.
-#'   Default 10 000 m.
-#' @param min_year        Entero. Año mínimo aceptable. Default 1950.
-#'
-#' @return El mismo `tibble` con columna adicional `quality_flag`.
-#' @export
-#' @examples
-#' \dontrun{
-#' df <- bdcr_occurrences("Panthera onca", rows = 50)
-#' bdcr_quality_check(df)
-#' }
-bdcr_quality_check <- function(df,
-                                max_uncertainty = 10000,
-                                min_year        = 1950) {
-  if (!inherits(df, "data.frame") || nrow(df) == 0) {
-    cli::cli_abort("{.arg df} debe ser un data.frame no vacío.")
-  }
+| Flag | Condición |
+|---|---|
+| `"no_coords"` | `decimalLatitude` o `decimalLongitude` es `NA` |
+| `"geospatial_issue"` | `geospatialKosher == FALSE` |
+| `"taxonomic_issue"` | `taxonomicKosher == FALSE` |
+| `"old_record"` | `year` menor al año mínimo aceptable (default 1950) |
+| `"ok"` | Ninguna de las anteriores |
 
-  df |>
-    dplyr::mutate(
-      quality_flag = dplyr::case_when(
-        is.na(decimalLatitude) | is.na(decimalLongitude) ~ "no_coords",
-        !is.na(coordinateUncertaintyInMeters) &
-          coordinateUncertaintyInMeters > max_uncertainty  ~ "high_uncertainty",
-        taxonomicKosher == FALSE                           ~ "taxonomic_issue",
-        !is.na(year) & year < min_year                    ~ "old_record",
-        TRUE                                               ~ "ok"
-      )
-    )
-}
-```
+**Decisión de diseño:** se usa `geospatialKosher` como indicador de
+calidad espacial en lugar de un umbral manual de
+`coordinateUncertaintyInMeters`, porque ese campo no existe en la
+respuesta del API. `geospatialKosher` es el indicador de calidad
+geoespacial que el propio sistema BIODATACR calcula internamente.
 
-### 5.1 Prueba de control de calidad
+**Dependencia de tipos:** esta función requiere que `geospatialKosher`
+y `taxonomicKosher` sean `logical`. Esta condición la garantiza
+`bdcr_occurrences()` con la conversión `== "true"`.
+
+### Prueba
 
 ```{r}
 #| eval: false
@@ -508,12 +240,7 @@ devtools::load_all()
 df_raw <- bdcr_occurrences("Panthera onca", rows = 50)
 df_qc  <- bdcr_quality_check(df_raw)
 
-# Resumen de flags
 dplyr::count(df_qc, quality_flag, sort = TRUE)
-
-# Solo registros limpios
-df_clean <- dplyr::filter(df_qc, quality_flag == "ok")
-nrow(df_clean)
 ```
 
 ---
@@ -521,79 +248,8 @@ nrow(df_clean)
 ## 6. Tests: `tests/testthat/`
 
 Los tests verifican el comportamiento de las funciones sin depender de
-conexión a internet — se usan respuestas simuladas con `httr::with_mock()`
-o archivos JSON de fixtures.
-
-### 6.1 Tests de `utils.R`
-
-```{r}
-# tests/testthat/test-utils.R
-
-test_that("bdcr_url construye URLs correctamente", {
-  expect_equal(
-    rbiodatacr:::bdcr_url("occurrences/search"),
-    "http://datos.biodiversidad.go.cr/biocache-service/occurrences/search"
-  )
-})
-
-test_that("bdcr_check_string rechaza valores inválidos", {
-  expect_error(rbiodatacr:::bdcr_check_string(""))
-  expect_error(rbiodatacr:::bdcr_check_string(123))
-  expect_error(rbiodatacr:::bdcr_check_string(NA_character_))
-  expect_silent(rbiodatacr:::bdcr_check_string("Panthera onca"))
-})
-
-test_that("bdcr_check_count rechaza valores inválidos", {
-  expect_error(rbiodatacr:::bdcr_check_count(0))
-  expect_error(rbiodatacr:::bdcr_check_count(-5))
-  expect_error(rbiodatacr:::bdcr_check_count("10"))
-  expect_silent(rbiodatacr:::bdcr_check_count(100))
-})
-```
-
-### 6.2 Tests de `quality.R`
-
-```{r}
-# tests/testthat/test-quality.R
-
-test_that("bdcr_quality_check etiqueta coordenadas ausentes", {
-  df <- dplyr::tibble(
-    decimalLatitude              = NA_real_,
-    decimalLongitude             = NA_real_,
-    coordinateUncertaintyInMeters = NA_real_,
-    taxonomicKosher              = TRUE,
-    year                         = 2020
-  )
-  resultado <- bdcr_quality_check(df)
-  expect_equal(resultado$quality_flag, "no_coords")
-})
-
-test_that("bdcr_quality_check etiqueta incertidumbre alta", {
-  df <- dplyr::tibble(
-    decimalLatitude               = 9.5,
-    decimalLongitude              = -84.0,
-    coordinateUncertaintyInMeters = 50000,
-    taxonomicKosher               = TRUE,
-    year                          = 2020
-  )
-  resultado <- bdcr_quality_check(df)
-  expect_equal(resultado$quality_flag, "high_uncertainty")
-})
-
-test_that("bdcr_quality_check marca registros limpios como ok", {
-  df <- dplyr::tibble(
-    decimalLatitude               = 9.5,
-    decimalLongitude              = -84.0,
-    coordinateUncertaintyInMeters = 100,
-    taxonomicKosher               = TRUE,
-    year                          = 2020
-  )
-  resultado <- bdcr_quality_check(df)
-  expect_equal(resultado$quality_flag, "ok")
-})
-```
-
-### 6.3 Ejecutar todos los tests
+conexión a internet. Se prueban las funciones internas de `utils.R`
+con `:::` y las funciones de calidad con datos sintéticos.
 
 ```{r}
 devtools::test()
@@ -601,13 +257,13 @@ devtools::test()
 
 ---
 
-## 7. Documentación con roxygen2
+## 7. Documentación y verificación final
 
 ```{r}
-# Generar archivos .Rd en man/ a partir de los comentarios #'
+# Generar archivos .Rd en man/ a partir de los comentarios roxygen2
 devtools::document()
 
-# Verificar que el paquete pasa R CMD check sin errores
+# Verificar que el paquete pasa R CMD check sin errores ni warnings
 devtools::check()
 ```
 
@@ -615,7 +271,7 @@ devtools::check()
 
 ## 8. Ejemplo de uso integrado
 
-Flujo completo: consultar → descargar → limpiar → explorar.
+Flujo completo: explorar disponibilidad → descargar → limpiar → analizar.
 
 ```{r}
 #| eval: false
@@ -637,16 +293,16 @@ lista_occ <- bdcr_occurrences_batch(
   rows = 200
 )
 
-# 3. Aplicar control de calidad
+# 3. Control de calidad
 lista_limpia <- purrr::map(lista_occ, bdcr_quality_check)
 
-# 4. Consolidar y filtrar solo registros limpios
+# 4. Consolidar y filtrar registros limpios
 df_final <- bind_rows(lista_limpia, .id = "taxon") |>
   filter(quality_flag == "ok",
          !is.na(decimalLatitude),
          !is.na(decimalLongitude))
 
-# 5. Resumen
+# 5. Resumen por especie
 df_final |>
   count(taxon, sort = TRUE) |>
   rename(registros_limpios = n)
@@ -654,13 +310,13 @@ df_final |>
 
 ---
 
-## 9. Instalación y uso del paquete
+## 9. Instalación
 
 ```{r}
-# Instalar desde GitHub (una vez publicado)
-# remotes::install_github("ManuelSpinola/rbiodatacr")
-
-# Durante el desarrollo, instalar localmente
+# Durante el desarrollo
 devtools::install()
 library(rbiodatacr)
+
+# Desde GitHub (una vez publicado)
+# remotes::install_github("ManuelSpinola/rbiodatacr")
 ```

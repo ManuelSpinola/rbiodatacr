@@ -6,7 +6,7 @@
 
 #' @noRd
 BDCR_BASE_URL <- "http://datos.biodiversidad.go.cr/biocache-service"
-
+BDCR_BIE_URL <- "http://datos.biodiversidad.go.cr/bie-index"
 
 # ── Construcción de URL ───────────────────────────────────────────────────────
 
@@ -76,7 +76,7 @@ bdcr_GET <- function(url, query = list(), timeout = 60) {
   # Parsear JSON
   raw_text <- httr::content(resp, as = "text", encoding = "UTF-8")
   parsed   <- tryCatch(
-    jsonlite::fromJSON(raw_text, simplifyVector = FALSE),
+    jsonlite::fromJSON(raw_text, simplifyVector = TRUE),
     error = function(e) {
       cli::cli_abort(
         c("No se pudo parsear la respuesta JSON de BIODATACR.",
