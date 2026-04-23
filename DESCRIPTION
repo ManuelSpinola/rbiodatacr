@@ -1,19 +1,32 @@
 Package: rbiodatacr
 Type: Package
-Title: What the Package Does (Title Case)
+Title: R Client for the BIODATACR Biodiversity Data Platform of Costa Rica
 Version: 0.1.0
-Authors@R: c(
-    person(
-      "Jane", "Doe",
-      email = "jane@example.com",
-      role = c("aut", "cre")
-    )
-  )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Authors@R: person(
+    "Manuel", "Spinola",
+    email = "mspinola10@gmail.com",
+    role  = c("aut", "cre"),
+    comment = c(ORCID = "0000-0002-7839-1908"))
+Description: Provides functions to query occurrence records, species
+    information, and datasets from BIODATACR (https://biodiversidad.go.cr),
+    the national biodiversity information platform of Costa Rica managed
+    by the Technical Office of CONAGEBIO. Built on the Atlas of Living
+    Australia (ALA) API infrastructure. Developed in the framework of
+    the IUCN consultancy Enlazando el Paisaje Centroamericano.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
+URL: https://github.com/ManuelSpinola/rbiodatacr
+BugReports: https://github.com/ManuelSpinola/rbiodatacr/issues
 Suggests: 
+    CoordinateCleaner,
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Imports: 
+    cli,
+    dplyr,
+    httr,
+    jsonlite,
+    purrr
+RoxygenNote: 7.3.3
