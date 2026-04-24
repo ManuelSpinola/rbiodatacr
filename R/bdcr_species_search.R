@@ -1,10 +1,13 @@
-#' Buscar información taxonómica de una especie en BIODATACR
+#' Search for taxonomic information of a species in BIODATACR
 #'
-#' @param name  Character. Nombre científico (puede ser sinónimo o parcial).
-#' @param rows  Entero. Número máximo de resultados. Default 10.
+#' Queries the BIE (Biodiversity Information Explorer) index of BIODATACR
+#' to retrieve taxonomic information for a species.
 #'
-#' @return `tibble` con columnas: `name`, `guid`, `commonName`,
-#'   `scientificName`, `rank`, `kingdom`, `family`, `occurrenceCount`.
+#' @param name  Character. Scientific name (may be a synonym or partial name).
+#' @param rows  Integer. Maximum number of results. Default 10.
+#'
+#' @return A `tibble` with columns: `name`, `guid`, `commonName`,
+#'   `scientificName`, `rank`, `taxonomicStatus`, `nameComplete`.
 #' @export
 #' @examples
 #' \dontrun{
@@ -20,7 +23,7 @@ bdcr_species_search <- function(name, rows = 10) {
   resultados <- resp[["searchResults"]][["results"]]
 
   if (is.null(resultados) || nrow(resultados) == 0) {
-    cli::cli_inform("No se encontraron resultados para {.val {name}}.")
+    cli::cli_inform("No results found for {.val {name}}.")
     return(dplyr::tibble())
   }
 
