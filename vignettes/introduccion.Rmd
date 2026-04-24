@@ -1,0 +1,199 @@
+---
+title: "Introduction to rbiodatacr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to rbiodatacr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  message  = FALSE,
+  warning  = FALSE
+)
+```
+
+## Overview
+
+`rbiodatacr` is an R client for querying
+[BIODATACR](https://biodiversidad.go.cr), the national biodiversity
+information platform of Costa Rica managed by the Technical Office of
+CONAGEBIO. The platform is built on the
+[Atlas of Living Australia (ALA)](https://www.ala.org.au/) API
+infrastructure.
+
+```{r setup}
+library(rbiodatacr)
+library(dplyr)
+library(sf)
+library(ggplot2)
+```
+
+---
+
+## 1. Taxonomic search
+
+Before downloading occurrence records, use `bdcr_species_search()` to
+verify that the species name is recognized by BIODATACR and to retrieve
+its taxonomic identifier (GUID).
+
+```{r species-search}
+bdcr_species_search("Panthera onca")
+```
+
+The function may return more than one row when both the species and
+subspecies are registered. The `guid` column contains the unique
+identifier for each taxonomic concept — useful for precise queries.
+
+---
+
+## 2. Counting records
+
+Use `bdcr_count()` to check how many occurrence records are available
+before downloading.
+
+```{r count-single}
+bdcr_count("Panthera onca")
+```
+
+For multiple species at once use `bdcr_count_batch()`, which returns a
+tidy tibble with one row per species.
+
+```{r count-batch}
+species <- c(
+  "Tapirus bairdii",
+  "Panthera onca",
+  "Ara ambiguus",
+  "Bradypus variegatus"
+)
+
+conteos <- bdcr_count_batch(species)
+conteos
+```
+
+---
+
+## 3. Downloading occurrence records
+
+`bdcr_occurrences()` downloads records for a single species and returns
+a tibble with 15 fields relevant for biodiversity analysis.
+
+```{r occurrences-single}
+df_jaguar <- bdcr_occurrences("Panthera onca", rows = 100)
+glimpse(df_jaguar)
+```
+
+For multiple species use `bdcr_occurrences_batch()`, which returns a
+named list of tibbles — one per species.
+
+```{r occurrences-batch}
+spp_with_data <- filter(conteos, n_records >= 10)
+
+lista_occ <- bdcr_occurrences_batch(
+  taxa = spp_with_data$taxon,
+  rows = 100
+)
+
+# Number of records per species
+purrr::map_int(lista_occ, nrow)
+```
+
+---
+
+## 4. Quality control
+
+`bdcr_quality_check()` adds a `quality_flag` column to the occurrences
+tibble. Possible flags are:
+
+| Flag | Condition |
+|---|---|
+| `"ok"` | No issues detected |
+| `"no_coords"` | Missing coordinates |
+| `"geospatial_issue"` | `geospatialKosher == FALSE` |
+| `"taxonomic_issue"` | `taxonomicKosher == FALSE` |
+| `"old_record"` | Year before minimum threshold (default 1950) |
+
+```{r quality-check}
+df_qc <- bdcr_quality_check(df_jaguar)
+
+count(df_qc, quality_flag, sort = TRUE)
+```
+
+Keep only clean records:
+
+```{r quality-filter}
+df_clean <- filter(df_qc, quality_flag == "ok",
+                         !is.na(decimalLatitude),
+                         !is.na(decimalLongitude))
+nrow(df_clean)
+```
+
+---
+
+## 5. Mapping occurrence records
+
+Convert the clean tibble to an `sf` object and plot the records over
+Costa Rica.
+
+```{r map, fig.width = 7, fig.height = 6}
+# Convert to sf
+df_sf <- st_as_sf(
+  df_clean,
+  coords = c("decimalLongitude", "decimalLatitude"),
+  crs    = 4326
+)
+
+# Load Costa Rica national boundary included in rbiodatacr
+# Source: GADM (gadm.org), level 0 = country boundary
+data(cr_outline)
+
+# Map
+ggplot() +
+  geom_sf(data = cr_outline, fill = "gray95", color = "gray50") +
+  geom_sf(data = df_sf, color = "#E63946", size = 2, alpha = 0.7) +
+  labs(
+    title    = "Panthera onca — BIODATACR occurrence records",
+    subtitle = paste0(nrow(df_sf), " clean records"),
+    caption  = "Source: BIODATACR (biodiversidad.go.cr)",
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal()
+```
+
+---
+
+## 6. Complete workflow
+
+```{r workflow}
+# 1. Check availability
+species <- c("Tapirus bairdii", "Panthera onca",
+             "Ara ambiguus",    "Bradypus variegatus")
+
+conteos <- bdcr_count_batch(species)
+
+# 2. Download species with enough data
+con_datos <- filter(conteos, n_records >= 10)
+
+lista_occ <- bdcr_occurrences_batch(
+  taxa = con_datos$taxon,
+  rows = 200
+)
+
+# 3. Quality control
+lista_limpia <- purrr::map(lista_occ, bdcr_quality_check)
+
+# 4. Consolidate and filter
+df_final <- bind_rows(lista_limpia, .id = "taxon") |>
+  filter(quality_flag == "ok",
+         !is.na(decimalLatitude),
+         !is.na(decimalLongitude))
+
+# 5. Summary
+df_final |>
+  count(taxon, sort = TRUE) |>
+  rename(clean_records = n)
+```

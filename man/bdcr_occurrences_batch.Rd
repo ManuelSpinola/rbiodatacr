@@ -14,14 +14,8 @@ bdcr_occurrences_batch(taxa, rows = 100, wait = 1)
 \item{wait}{Numeric. Segundos de pausa entre consultas. Default 1.}
 }
 \value{
-Lista nombrada de tibbles (uno por taxón).
+Lista nombrada de tibbles.
 }
 \description{
 Descargar ocurrencias para múltiples taxones
-}
-\examples{
-\dontrun{
-spp <- c("Tapirus bairdii", "Panthera onca", "Baird's tapir")
-datos <- bdcr_occurrences_batch(spp, rows = 50)
-}
 }

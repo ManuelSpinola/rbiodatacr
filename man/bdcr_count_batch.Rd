@@ -17,9 +17,3 @@ bdcr_count_batch(taxa, wait = 1)
 \description{
 Contar registros para múltiples taxones
 }
-\examples{
-\dontrun{
-spp <- c("Tapirus bairdii", "Panthera onca")
-bdcr_count_batch(spp)
-}
-}

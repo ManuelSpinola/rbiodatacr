@@ -15,8 +15,3 @@ Entero con el número total de registros.
 \description{
 Contar registros de ocurrencia para un taxón
 }
-\examples{
-\dontrun{
-bdcr_count("Panthera onca")
-}
-}

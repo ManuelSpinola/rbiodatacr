@@ -5,35 +5,17 @@
 \title{Descargar registros de ocurrencia de BIODATACR}
 \usage{
 bdcr_occurrences(taxon, rows = 100, start = 0)
-
-bdcr_occurrences(taxon, rows = 100, start = 0)
 }
 \arguments{
 \item{taxon}{Character. Nombre científico del taxón.}
 
-\item{rows}{Entero. Número máximo de registros a descargar. Default 100.}
+\item{rows}{Entero. Número máximo de registros. Default 100.}
 
-\item{start}{Entero. Registro desde el cual iniciar (paginación). Default 0.}
+\item{start}{Entero. Registro inicial para paginación. Default 0.}
 }
 \value{
-`tibble` con columnas: `scientificName`, `decimalLatitude`,
-  `decimalLongitude`, `coordinateUncertaintyInMeters`, `year`, `month`,
-  `basisOfRecord`, `dataResourceName`, `geospatialKosher`, `taxonomicKosher`.
-
-`tibble` con columnas: `scientificName`, `decimalLatitude`,
-  `decimalLongitude`, `coordinateUncertaintyInMeters`, `year`, `month`,
-  `basisOfRecord`, `dataResourceName`, `geospatialKosher`, `taxonomicKosher`.
+`tibble` con campos de ocurrencia.
 }
 \description{
 Descargar registros de ocurrencia de BIODATACR
-
-Descargar registros de ocurrencia de BIODATACR
-}
-\examples{
-\dontrun{
-bdcr_occurrences("Tapirus bairdii", rows = 50)
-}
-\dontrun{
-bdcr_occurrences("Tapirus bairdii", rows = 50)
-}
 }
