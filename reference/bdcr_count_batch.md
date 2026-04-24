@@ -1,6 +1,6 @@
-# Contar registros para múltiples taxones
+# Count occurrence records for multiple taxa
 
-Contar registros para múltiples taxones
+Count occurrence records for multiple taxa
 
 ## Usage
 
@@ -12,12 +12,21 @@ bdcr_count_batch(taxa, wait = 1)
 
 - taxa:
 
-  Character vector. Nombres científicos.
+  Character vector. Scientific names.
 
 - wait:
 
-  Numeric. Segundos de pausa entre consultas. Default 1.
+  Numeric. Seconds to pause between requests. Default 1.
 
 ## Value
 
-\`tibble\` con columnas \`taxon\` y \`n_records\`.
+A \`tibble\` with columns \`taxon\` and \`n_records\`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+spp <- c("Tapirus bairdii", "Panthera onca")
+bdcr_count_batch(spp)
+} # }
+```

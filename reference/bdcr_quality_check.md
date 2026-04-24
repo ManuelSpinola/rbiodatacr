@@ -1,6 +1,8 @@
-# Verificar calidad de registros de ocurrencia
+# Quality check for occurrence records
 
-Agrega una columna \`quality_flag\` al tibble de ocurrencias.
+Adds a \`quality_flag\` column to an occurrence tibble. Requires that
+\`geospatialKosher\` and \`taxonomicKosher\` are logical — a condition
+guaranteed by \`bdcr_occurrences()\`.
 
 ## Usage
 
@@ -12,22 +14,36 @@ bdcr_quality_check(df, min_year = 1950)
 
 - df:
 
-  \`tibble\` de ocurrencias (salida de \`bdcr_occurrences()\`).
+  A \`tibble\` of occurrence records (output of \`bdcr_occurrences()\`).
 
 - min_year:
 
-  Entero. Año mínimo aceptable. Default 1950.
-
-- max_uncertainty:
-
-  Numeric. Umbral en metros para coordenadas imprecisas. Default 10 000
-  m.
+  Integer. Minimum acceptable year. Default 1950.
 
 ## Value
 
-El mismo \`tibble\` con columna adicional \`quality_flag\`. Los valores
-posibles son: \`"ok"\`, \`"no_coords"\`, \`"high_uncertainty"\`,
-\`"taxonomic_issue"\`, \`"old_record"\`.
+The same \`tibble\` with an additional \`quality_flag\` column. Possible
+values:
+
+- \`"ok"\`:
+
+  No issues detected.
+
+- \`"no_coords"\`:
+
+  Missing coordinates.
+
+- \`"geospatial_issue"\`:
+
+  \`geospatialKosher == FALSE\`.
+
+- \`"taxonomic_issue"\`:
+
+  \`taxonomicKosher == FALSE\`.
+
+- \`"old_record"\`:
+
+  Year before \`min_year\`.
 
 ## Examples
 

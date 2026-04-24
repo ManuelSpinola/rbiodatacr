@@ -1,6 +1,6 @@
-# Contar registros de ocurrencia para un taxón
+# Count occurrence records for a taxon
 
-Contar registros de ocurrencia para un taxón
+Count occurrence records for a taxon
 
 ## Usage
 
@@ -12,8 +12,16 @@ bdcr_count(taxon)
 
 - taxon:
 
-  Character. Nombre científico del taxón (e.g. \`"Panthera onca"\`).
+  Character. Scientific name (e.g. \`"Panthera onca"\`).
 
 ## Value
 
-Entero con el número total de registros.
+Integer with the total number of available records.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+bdcr_count("Panthera onca")
+} # }
+```

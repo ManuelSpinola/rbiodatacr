@@ -1,6 +1,6 @@
-# Descargar registros de ocurrencia de BIODATACR
+# Download occurrence records from BIODATACR
 
-Descargar registros de ocurrencia de BIODATACR
+Download occurrence records from BIODATACR
 
 ## Usage
 
@@ -12,16 +12,28 @@ bdcr_occurrences(taxon, rows = 100, start = 0)
 
 - taxon:
 
-  Character. Nombre científico del taxón.
+  Character. Scientific name of the taxon.
 
 - rows:
 
-  Entero. Número máximo de registros. Default 100.
+  Integer. Maximum number of records to download. Default 100.
 
 - start:
 
-  Entero. Registro inicial para paginación. Default 0.
+  Integer. Starting record for pagination. Default 0.
 
 ## Value
 
-\`tibble\` con campos de ocurrencia.
+A \`tibble\` with columns: \`scientificName\`, \`vernacularName\`,
+\`decimalLatitude\`, \`decimalLongitude\`, \`year\`, \`month\`,
+\`basisOfRecord\`, \`dataResourceName\`, \`country\`, \`family\`,
+\`species\`, \`collector\`, \`license\`, \`geospatialKosher\`,
+\`taxonomicKosher\`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+bdcr_occurrences("Panthera onca", rows = 50)
+} # }
+```

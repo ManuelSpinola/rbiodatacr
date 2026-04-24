@@ -1,6 +1,6 @@
-# Descargar ocurrencias para múltiples taxones
+# Download occurrence records for multiple taxa
 
-Descargar ocurrencias para múltiples taxones
+Download occurrence records for multiple taxa
 
 ## Usage
 
@@ -12,16 +12,25 @@ bdcr_occurrences_batch(taxa, rows = 100, wait = 1)
 
 - taxa:
 
-  Character vector. Nombres científicos.
+  Character vector. Scientific names.
 
 - rows:
 
-  Entero. Registros por taxón. Default 100.
+  Integer. Records per taxon. Default 100.
 
 - wait:
 
-  Numeric. Segundos de pausa entre consultas. Default 1.
+  Numeric. Seconds to pause between requests. Default 1.
 
 ## Value
 
-Lista nombrada de tibbles.
+Named list of tibbles, one per taxon.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+spp <- c("Tapirus bairdii", "Panthera onca")
+bdcr_occurrences_batch(spp, rows = 50)
+} # }
+```

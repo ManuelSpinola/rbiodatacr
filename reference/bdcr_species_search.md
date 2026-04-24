@@ -1,6 +1,7 @@
-# Buscar información taxonómica de una especie en BIODATACR
+# Search for taxonomic information of a species in BIODATACR
 
-Buscar información taxonómica de una especie en BIODATACR
+Queries the BIE (Biodiversity Information Explorer) index of BIODATACR
+to retrieve taxonomic information for a species.
 
 ## Usage
 
@@ -12,17 +13,16 @@ bdcr_species_search(name, rows = 10)
 
 - name:
 
-  Character. Nombre científico (puede ser sinónimo o parcial).
+  Character. Scientific name (may be a synonym or partial name).
 
 - rows:
 
-  Entero. Número máximo de resultados. Default 10.
+  Integer. Maximum number of results. Default 10.
 
 ## Value
 
-\`tibble\` con columnas: \`name\`, \`guid\`, \`commonName\`,
-\`scientificName\`, \`rank\`, \`kingdom\`, \`family\`,
-\`occurrenceCount\`.
+A \`tibble\` with columns: \`name\`, \`guid\`, \`commonName\`,
+\`scientificName\`, \`rank\`, \`taxonomicStatus\`, \`nameComplete\`.
 
 ## Examples
 

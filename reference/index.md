@@ -3,16 +3,16 @@
 ## All functions
 
 - [`bdcr_count()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count.md)
-  : Contar registros de ocurrencia para un taxón
+  : Count occurrence records for a taxon
 - [`bdcr_count_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count_batch.md)
-  : Contar registros para múltiples taxones
+  : Count occurrence records for multiple taxa
 - [`bdcr_occurrences()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences.md)
-  : Descargar registros de ocurrencia de BIODATACR
+  : Download occurrence records from BIODATACR
 - [`bdcr_occurrences_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences_batch.md)
-  : Descargar ocurrencias para múltiples taxones
+  : Download occurrence records for multiple taxa
 - [`bdcr_quality_check()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_quality_check.md)
-  : Verificar calidad de registros de ocurrencia
+  : Quality check for occurrence records
 - [`bdcr_species_search()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_species_search.md)
-  : Buscar información taxonómica de una especie en BIODATACR
+  : Search for taxonomic information of a species in BIODATACR
 - [`cr_outline`](https://manuelspinola.github.io/rbiodatacr/reference/cr_outline.md)
   : Costa Rica national boundary
