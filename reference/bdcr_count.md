@@ -17,11 +17,3 @@ bdcr_count(taxon)
 ## Value
 
 Entero con el número total de registros.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-bdcr_count("Panthera onca")
-} # }
-```

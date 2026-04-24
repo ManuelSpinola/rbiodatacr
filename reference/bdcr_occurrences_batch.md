@@ -24,13 +24,4 @@ bdcr_occurrences_batch(taxa, rows = 100, wait = 1)
 
 ## Value
 
-Lista nombrada de tibbles (uno por taxón).
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-spp <- c("Tapirus bairdii", "Panthera onca", "Baird's tapir")
-datos <- bdcr_occurrences_batch(spp, rows = 50)
-} # }
-```
+Lista nombrada de tibbles.

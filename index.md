@@ -20,8 +20,8 @@ remotes::install_github("ManuelSpinola/rbiodatacr")
 | [`bdcr_count_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count_batch.md)             | Cuenta registros para varios taxones          |
 | [`bdcr_occurrences()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences.md)             | Descarga registros de ocurrencia de un taxón  |
 | [`bdcr_occurrences_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences_batch.md) | Descarga registros para varios taxones        |
-| `bdcr_species_search()`                                                                                      | Busca información taxonómica en el índice BIE |
-| `bdcr_quality_check()`                                                                                       | Evalúa calidad de registros y asigna flags    |
+| [`bdcr_species_search()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_species_search.md)       | Busca información taxonómica en el índice BIE |
+| [`bdcr_quality_check()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_quality_check.md)         | Evalúa calidad de registros y asigna flags    |
 
 ## Uso básico
 
