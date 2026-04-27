@@ -8,11 +8,11 @@ Authors@R: person(
     role  = c("aut", "cre"),
     comment = c(ORCID = "0000-0002-7839-1908"))
 Description: Provides functions to query occurrence records, species
-    information, and datasets from BIODATACR (https://biodiversidad.go.cr),
-    the national biodiversity information platform of Costa Rica managed
-    by the Technical Office of CONAGEBIO. Built on the Atlas of Living
-    Australia (ALA) API infrastructure. Developed in the framework of
-    the IUCN consultancy Enlazando el Paisaje Centroamericano.
+    information, and datasets from BIODATACR
+    <https://biodiversidad.go.cr>, the national biodiversity information
+    platform of Costa Rica managed by the Technical Office of CONAGEBIO
+    (Comision Nacional para la Gestion de la Biodiversidad, Costa Rica).
+    Built on the Atlas of Living Australia (ALA) API infrastructure.
 License: MIT + file LICENSE
 Encoding: UTF-8
 URL: https://github.com/ManuelSpinola/rbiodatacr, https://manuelspinola.github.io/rbiodatacr/
@@ -36,3 +36,4 @@ VignetteBuilder: knitr
 Depends: 
     R (>= 3.5)
 LazyData: true
+Language: en-US

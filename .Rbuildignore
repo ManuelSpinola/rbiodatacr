@@ -11,3 +11,4 @@
 ^data-raw$
 ^rbiodatacr\.qmd$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$
