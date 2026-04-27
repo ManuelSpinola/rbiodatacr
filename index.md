@@ -1,10 +1,12 @@
 # rbiodatacr
 
+# rbiodatacr
+
 `rbiodatacr` es un cliente R para consultar
 [BIODATACR](https://biodiversidad.go.cr), la plataforma nacional de
 información sobre biodiversidad de Costa Rica gestionada por la Oficina
-Técnica de CONAGEBIO. Desarrollado en el marco de la consultoría IUCN
-*Enlazando el Paisaje Centroamericano*.
+Técnica de CONAGEBIO (Comisión Nacional para la Gestión de la
+Biodiversidad, Costa Rica).
 
 ## Instalación
 
@@ -92,3 +94,10 @@ Australia (ALA)](https://www.ala.org.au/).
 ## Licencia
 
 MIT © Manuel Spinola
+
+## Logo
+
+Tapir silhouette by [Gabriela
+Palomo-Muñoz](https://www.phylopic.org/images/eade2272-a39d-4554-810e-8be371334192/tapirus-bairdii)
+via [PhyloPic](https://www.phylopic.org/), licensed under [CC BY
+3.0](https://creativecommons.org/licenses/by/3.0/).
