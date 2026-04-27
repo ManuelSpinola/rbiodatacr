@@ -2,102 +2,102 @@
 
 # rbiodatacr
 
-`rbiodatacr` es un cliente R para consultar
-[BIODATACR](https://biodiversidad.go.cr), la plataforma nacional de
-información sobre biodiversidad de Costa Rica gestionada por la Oficina
-Técnica de CONAGEBIO (Comisión Nacional para la Gestión de la
-Biodiversidad, Costa Rica).
+`rbiodatacr` is an R client for querying
+[BIODATACR](https://biodiversidad.go.cr), the national biodiversity
+information platform of Costa Rica managed by the Technical Office of
+CONAGEBIO (Comision Nacional para la Gestion de la Biodiversidad, Costa
+Rica).
 
-## Instalación
+## Installation
 
 ``` r
 remotes::install_github("ManuelSpinola/rbiodatacr")
 ```
 
-## Funciones principales
+## Main functions
 
-| Función                                                                                                      | Descripción                                   |
+| Function                                                                                                     | Description                                   |
 |--------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
-| [`bdcr_count()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count.md)                         | Cuenta registros disponibles para un taxón    |
-| [`bdcr_count_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count_batch.md)             | Cuenta registros para varios taxones          |
-| [`bdcr_occurrences()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences.md)             | Descarga registros de ocurrencia de un taxón  |
-| [`bdcr_occurrences_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences_batch.md) | Descarga registros para varios taxones        |
-| [`bdcr_species_search()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_species_search.md)       | Busca información taxonómica en el índice BIE |
-| [`bdcr_quality_check()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_quality_check.md)         | Evalúa calidad de registros y asigna flags    |
+| [`bdcr_count()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count.md)                         | Count available records for a taxon           |
+| [`bdcr_count_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count_batch.md)             | Count records for multiple taxa               |
+| [`bdcr_occurrences()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences.md)             | Download occurrence records for a taxon       |
+| [`bdcr_occurrences_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences_batch.md) | Download occurrence records for multiple taxa |
+| [`bdcr_species_search()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_species_search.md)       | Search taxonomic information in the BIE index |
+| [`bdcr_quality_check()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_quality_check.md)         | Evaluate record quality and assign flags      |
 
-## Uso básico
+## Basic usage
 
 ``` r
 library(rbiodatacr)
 
-# Verificar disponibilidad de datos
+# Check data availability
 bdcr_count("Panthera onca")
 ```
 
 ``` r
-# Descargar registros de ocurrencia
+# Download occurrence records
 df <- bdcr_occurrences("Panthera onca", rows = 50)
 dplyr::glimpse(df)
 ```
 
 ``` r
-# Consulta para varias especies
-especies <- c("Tapirus bairdii", "Panthera onca", "Ara ambiguus")
-conteos  <- bdcr_count_batch(especies)
-conteos
+# Query for multiple species
+species <- c("Tapirus bairdii", "Panthera onca", "Ara ambiguus")
+counts  <- bdcr_count_batch(species)
+counts
 ```
 
 ``` r
-# Control de calidad
+# Quality control
 df_qc <- bdcr_quality_check(df)
 dplyr::count(df_qc, quality_flag, sort = TRUE)
 ```
 
-## Flujo de trabajo completo
+## Complete workflow
 
 ``` r
 library(rbiodatacr)
 library(dplyr)
 
-# 1. Explorar disponibilidad
-especies <- c("Tapirus bairdii", "Panthera onca",
-              "Ara ambiguus",    "Bradypus variegatus")
+# 1. Explore data availability
+species <- c("Tapirus bairdii", "Panthera onca",
+             "Ara ambiguus",    "Bradypus variegatus")
 
-conteos <- bdcr_count_batch(especies)
+counts <- bdcr_count_batch(species)
 
-# 2. Descargar especies con datos suficientes
-con_datos <- filter(conteos, n_records >= 10)
+# 2. Download species with sufficient data
+with_data <- filter(counts, n_records >= 10)
 
-lista_occ <- bdcr_occurrences_batch(
-  taxa = con_datos$taxon,
+occ_list <- bdcr_occurrences_batch(
+  taxa = with_data$taxon,
   rows = 200
 )
 
-# 3. Control de calidad y consolidar
-df_final <- purrr::map(lista_occ, bdcr_quality_check) |>
+# 3. Quality control and consolidate
+df_final <- purrr::map(occ_list, bdcr_quality_check) |>
   bind_rows(.id = "taxon") |>
   filter(quality_flag == "ok",
          !is.na(decimalLatitude),
          !is.na(decimalLongitude))
 
-# 4. Resumen
+# 4. Summary
 df_final |>
   count(taxon, sort = TRUE) |>
-  rename(registros_limpios = n)
+  rename(clean_records = n)
 ```
 
-## Sobre BIODATACR
+## About BIODATACR
 
-BIODATACR está construido sobre la infraestructura del [Atlas of Living
+BIODATACR is built on the infrastructure of the [Atlas of Living
 Australia (ALA)](https://www.ala.org.au/).
 
-## Licencia
+## License
 
 MIT © Manuel Spinola
 
 ## Logo
 
 Tapir silhouette by [Gabriela
-Palomo-Muñoz](https://www.phylopic.org/images/eade2272-a39d-4554-810e-8be371334192/tapirus-bairdii)
+Palomo-Munoz](https://www.phylopic.org/images/eade2272-a39d-4554-810e-8be371334192/tapirus-bairdii)
 via [PhyloPic](https://www.phylopic.org/), licensed under [CC BY
 3.0](https://creativecommons.org/licenses/by/3.0/).
