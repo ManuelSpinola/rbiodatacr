@@ -1,7 +1,13 @@
 url: https://manuelspinola.github.io/rbiodatacr/
 template:
   bootstrap: 5
-
+navbar:
+  structure:
+    left: [intro, reference, news]
+  components:
+    intro:
+      text: Get Started
+      href: articles/introduccion.html
 articles:
   - title: "Get started"
     contents:

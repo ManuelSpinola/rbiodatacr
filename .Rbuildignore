@@ -10,3 +10,4 @@
 ^README\.Rmd$
 ^data-raw$
 ^rbiodatacr\.qmd$
+^cran-comments\.md$

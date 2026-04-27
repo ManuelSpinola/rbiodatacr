@@ -41,15 +41,19 @@ file.remove("man/hello.Rd")
 # Licencia
 usethis::use_mit_license("Manuel Spinola")
 
-# Crear archivos R
+# Crear archivos R — un archivo por función
 usethis::use_r("utils")
-usethis::use_r("occurrences")
-usethis::use_r("species")
-usethis::use_r("quality")
+usethis::use_r("bdcr_count")
+usethis::use_r("bdcr_occurrences")
+usethis::use_r("bdcr_count_batch")
+usethis::use_r("bdcr_occurrences_batch")
+usethis::use_r("bdcr_species_search")
+usethis::use_r("bdcr_quality_check")
+usethis::use_r("data")
 
 # Infraestructura de tests y documentación
 usethis::use_testthat()
-usethis::use_readme_md()
+usethis::use_readme_rmd()
 usethis::use_git()
 ```
 
@@ -70,6 +74,26 @@ usethis::use_package("CoordinateCleaner", type = "Suggests")
 usethis::use_package("testthat",          type = "Suggests")
 usethis::use_package("knitr",             type = "Suggests")
 usethis::use_package("rmarkdown",         type = "Suggests")
+usethis::use_package("ggplot2",           type = "Suggests")
+usethis::use_package("sf",               type = "Suggests")
+```
+
+### Estructura final de `R/`
+
+Se adoptó la convención de **un archivo por función** en lugar de
+agrupar por tema. Esto facilita el mantenimiento — si hay un error en
+`bdcr_count()` se sabe exactamente en qué archivo buscarlo.
+
+```
+R/
+  utils.R                    # infraestructura interna (no exportada)
+  bdcr_count.R               # bdcr_count()
+  bdcr_occurrences.R         # bdcr_occurrences()
+  bdcr_count_batch.R         # bdcr_count_batch()
+  bdcr_occurrences_batch.R   # bdcr_occurrences_batch()
+  bdcr_species_search.R      # bdcr_species_search()
+  bdcr_quality_check.R       # bdcr_quality_check()
+  data.R                     # documentación de datasets
 ```
 
 ---
@@ -105,6 +129,16 @@ de URL en lugar de una sola.
   los campos tabulares de la respuesta lleguen directamente como
   `data.frame`, lo que simplifica el parseo en las funciones públicas.
 
+**Sobre el `NAMESPACE`:** el archivo `NAMESPACE` debe ser generado
+exclusivamente por roxygen2. Si RStudio lo crea con
+`exportPattern("^[[:alpha:]]+")`, hay que eliminarlo y regenerarlo con
+`devtools::document()` para que solo exporte las funciones con
+`@export`.
+
+**Sobre las constantes:** `BDCR_BASE_URL` y `BDCR_BIE_URL` no llevan
+comentarios roxygen2 (`#'`) — son asignaciones simples y roxygen2 no
+las debe procesar.
+
 ### Verificación
 
 ```{r}
@@ -113,17 +147,17 @@ devtools::load_all()
 
 ---
 
-## 3. Ocurrencias: `R/occurrences.R`
+## 3. Registros de ocurrencia
 
-Este archivo contiene 4 funciones que consultan el endpoint
-`occurrences/search` del servidor biocache.
+Las funciones de ocurrencia consultan el endpoint `occurrences/search`
+del servidor biocache. Cada una vive en su propio archivo `R/`.
 
-| Función | Descripción |
-|---|---|
-| `bdcr_count()` | Cuenta registros disponibles para un taxón |
-| `bdcr_occurrences()` | Descarga registros de un taxón como tibble |
-| `bdcr_count_batch()` | Cuenta registros para varios taxones |
-| `bdcr_occurrences_batch()` | Descarga registros para varios taxones |
+| Función | Archivo | Descripción |
+|---|---|---|
+| `bdcr_count()` | `bdcr_count.R` | Cuenta registros disponibles para un taxón |
+| `bdcr_occurrences()` | `bdcr_occurrences.R` | Descarga registros de un taxón como tibble |
+| `bdcr_count_batch()` | `bdcr_count_batch.R` | Cuenta registros para varios taxones |
+| `bdcr_occurrences_batch()` | `bdcr_occurrences_batch.R` | Descarga registros para varios taxones |
 
 **Decisiones descubiertas al probar el API:**
 
@@ -134,7 +168,7 @@ Este archivo contiene 4 funciones que consultan el endpoint
   `pageSize`, **no** `rows`. Con `rows` el servidor devuelve siempre
   10 registros independientemente del valor solicitado.
 - El API devuelve `occurrences` como un `data.frame` de 55 columnas
-  con `simplifyVector = TRUE`. Se seleccionan solo 14 campos relevantes
+  con `simplifyVector = TRUE`. Se seleccionan solo 15 campos relevantes
   para análisis de biodiversidad.
 - Los campos `assertions` y `speciesGroups` son listas anidadas y se
   excluyen del tibble de salida para mantenerlo rectangular.
@@ -174,7 +208,7 @@ bdcr_count_batch(spp)
 
 ---
 
-## 4. Búsqueda de especies: `R/species.R`
+## 4. Búsqueda de especies: `R/bdcr_species_search.R`
 
 Contiene `bdcr_species_search()`, que consulta el endpoint `/search`
 del servidor `bie-index` para obtener información taxonómica.
@@ -208,7 +242,7 @@ bdcr_species_search("Tapirus bairdii")
 
 ---
 
-## 5. Calidad de datos: `R/quality.R`
+## 5. Calidad de datos: `R/bdcr_quality_check.R`
 
 Contiene `bdcr_quality_check()`, que toma un tibble de ocurrencias
 (salida de `bdcr_occurrences()`) y agrega una columna `quality_flag`.
@@ -245,19 +279,56 @@ dplyr::count(df_qc, quality_flag, sort = TRUE)
 
 ---
 
-## 6. Tests: `tests/testthat/`
+## 6. Dataset interno: `data/cr_outline.rda`
+
+El límite nacional de Costa Rica se incluye como dataset interno del
+paquete para no depender de paquetes externos en el vignette y en el
+sitio web.
+
+**Fuente:** GADM (gadm.org), nivel 0 (límite nacional).
+
+El script de generación vive en `data-raw/cr_outline.R` y se ejecuta
+una sola vez durante el desarrollo:
+
+```{r}
+# data-raw/cr_outline.R — ejecutar solo una vez
+cr_outline <- geodata::gadm("CRI", level = 0, path = tempdir()) |>
+  sf::st_as_sf()
+
+usethis::use_data(cr_outline, overwrite = TRUE)
+```
+
+Los usuarios acceden al dataset con:
+
+```{r}
+#| eval: false
+data(cr_outline)
+# o directamente:
+rbiodatacr::cr_outline
+```
+
+---
+
+## 7. Tests: `tests/testthat/`
 
 Los tests verifican el comportamiento de las funciones sin depender de
 conexión a internet. Se prueban las funciones internas de `utils.R`
 con `:::` y las funciones de calidad con datos sintéticos.
 
+Archivos de tests:
+
+- `tests/testthat/test-utils.R` — tests de `bdcr_url()`,
+  `bdcr_check_string()`, `bdcr_check_count()`
+- `tests/testthat/test-quality.R` — tests de `bdcr_quality_check()`
+
 ```{r}
 devtools::test()
+# FAIL 0 | WARN 0 | SKIP 0 | PASS 11
 ```
 
 ---
 
-## 7. Documentación y verificación final
+## 8. Documentación y verificación final
 
 ```{r}
 # Generar archivos .Rd en man/ a partir de los comentarios roxygen2
@@ -265,11 +336,48 @@ devtools::document()
 
 # Verificar que el paquete pasa R CMD check sin errores ni warnings
 devtools::check()
+# 0 errors | 0 warnings | 0 notes
 ```
 
 ---
 
-## 8. Ejemplo de uso integrado
+## 9. Publicación
+
+### Sitio web con pkgdown
+
+```{r}
+# Configurar pkgdown
+usethis::use_pkgdown()
+
+# GitHub Action para publicar automáticamente
+usethis::use_pkgdown_github_pages()
+
+# Construir el sitio localmente
+pkgdown::build_site()
+```
+
+El sitio está disponible en:
+<https://manuelspinola.github.io/rbiodatacr/>
+
+### GitHub Actions
+
+```{r}
+# R CMD check automático en cada push
+usethis::use_github_action("check-standard")
+```
+
+### Repositorio
+
+```{r}
+# Crear repositorio en GitHub
+usethis::use_github(private = FALSE)
+```
+
+Repositorio: <https://github.com/ManuelSpinola/rbiodatacr>
+
+---
+
+## 10. Ejemplo de uso integrado
 
 Flujo completo: explorar disponibilidad → descargar → limpiar → analizar.
 
@@ -310,13 +418,13 @@ df_final |>
 
 ---
 
-## 9. Instalación
+## 11. Instalación
 
 ```{r}
 # Durante el desarrollo
 devtools::install()
 library(rbiodatacr)
 
-# Desde GitHub (una vez publicado)
-# remotes::install_github("ManuelSpinola/rbiodatacr")
+# Desde GitHub
+remotes::install_github("ManuelSpinola/rbiodatacr")
 ```
