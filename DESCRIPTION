@@ -10,8 +10,7 @@ Authors@R: person(
 Description: Provides functions to query occurrence records, species
     information, and datasets from BIODATACR
     <https://biodiversidad.go.cr>, the national biodiversity information
-    platform of Costa Rica managed by the Technical Office of CONAGEBIO
-    (Comision Nacional para la Gestion de la Biodiversidad, Costa Rica).
+    platform of Costa Rica managed by the Technical Office of CONAGEBIO, Costa Rica.
     Built on the Atlas of Living Australia (ALA) API infrastructure.
 License: MIT + file LICENSE
 Encoding: UTF-8
