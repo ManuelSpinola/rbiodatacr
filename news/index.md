@@ -2,6 +2,8 @@
 
 ## rbiodatacr 0.1.0
 
+CRAN release: 2026-04-29
+
 - First release on CRAN.
 - [`bdcr_count()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count.md):
   count available records for a taxon.
