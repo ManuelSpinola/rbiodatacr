@@ -12,7 +12,8 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment  = "#>",
   message  = FALSE,
-  warning  = FALSE
+  warning  = FALSE,
+  eval     = FALSE
 )
 ```
 
@@ -25,7 +26,7 @@ CONAGEBIO. The platform is built on the
 [Atlas of Living Australia (ALA)](https://www.ala.org.au/) API
 infrastructure.
 
-```{r setup}
+```{r setup, eval=TRUE}
 library(rbiodatacr)
 library(dplyr)
 library(sf)
