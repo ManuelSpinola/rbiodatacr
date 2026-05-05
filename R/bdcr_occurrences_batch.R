@@ -4,7 +4,8 @@
 #' @param rows  Integer. Records per taxon. Default 100.
 #' @param wait  Numeric. Seconds to pause between requests. Default 1.
 #'
-#' @return Named list of tibbles, one per taxon.
+#' @return Named list of tibbles, one per taxon. If the service is unavailable
+#'   for a given taxon, the corresponding element will be an empty `tibble`.
 #' @export
 #' @examples
 #' \dontrun{
@@ -21,7 +22,13 @@ bdcr_occurrences_batch <- function(taxa, rows = 100, wait = 1) {
 
   for (i in seq_along(taxa)) {
     cli::cli_progress_step("Downloading {taxa[[i]]} ({i}/{length(taxa)})")
-    resultados[[i]] <- bdcr_occurrences(taxa[[i]], rows = rows)
+    resultados[[i]] <- tryCatch(
+      bdcr_occurrences(taxa[[i]], rows = rows),
+      error = function(e) {
+        cli::cli_inform(c("!" = "Failed for {taxa[[i]]}: {conditionMessage(e)}"))
+        dplyr::tibble()
+      }
+    )
     if (i < length(taxa)) bdcr_polite_wait(wait)
   }
 

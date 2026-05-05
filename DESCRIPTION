@@ -1,7 +1,7 @@
 Package: rbiodatacr
 Type: Package
 Title: R Client for the BIODATACR Biodiversity Data Platform of Costa Rica
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: person(
     "Manuel", "Spinola",
     email = "mspinola10@gmail.com",

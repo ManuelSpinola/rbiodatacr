@@ -8,7 +8,8 @@
 #'   `decimalLatitude`, `decimalLongitude`, `year`, `month`,
 #'   `basisOfRecord`, `dataResourceName`, `country`, `family`,
 #'   `species`, `collector`, `license`, `geospatialKosher`,
-#'   `taxonomicKosher`.
+#'   `taxonomicKosher`. Returns an empty `tibble` if the service is
+#'   unavailable or no records are found.
 #' @export
 #' @examples
 #' \dontrun{
@@ -21,6 +22,9 @@ bdcr_occurrences <- function(taxon, rows = 100, start = 0) {
   url  <- bdcr_url("occurrences/search")
   resp <- bdcr_GET(url, query = list(q = taxon, pageSize = rows, start = start))
 
+  # bdcr_GET returns NULL when the service is unavailable
+  if (is.null(resp)) return(dplyr::tibble())
+
   occs <- resp[["occurrences"]]
 
   if (is.null(occs) || nrow(occs) == 0) {
@@ -31,11 +35,13 @@ bdcr_occurrences <- function(taxon, rows = 100, start = 0) {
   occs |>
     dplyr::as_tibble() |>
     dplyr::select(
-      scientificName, vernacularName,
-      decimalLatitude, decimalLongitude,
-      year, month, basisOfRecord, dataResourceName,
-      country, family, species, collector, license,
-      geospatialKosher, taxonomicKosher
+      dplyr::any_of(c(
+        "scientificName", "vernacularName",
+        "decimalLatitude", "decimalLongitude",
+        "year", "month", "basisOfRecord", "dataResourceName",
+        "country", "family", "species", "collector", "license",
+        "geospatialKosher", "taxonomicKosher"
+      ))
     ) |>
     dplyr::mutate(
       geospatialKosher = geospatialKosher == "true",

@@ -18,3 +18,12 @@ test_that("bdcr_check_count rechaza valores inválidos", {
   expect_error(rbiodatacr:::bdcr_check_count("10"))
   expect_silent(rbiodatacr:::bdcr_check_count(100))
 })
+
+test_that("bdcr_GET returns NULL when server is unreachable", {
+  skip_on_cran()
+  # Use a deliberately invalid URL to simulate an unreachable server
+  result <- suppressMessages(
+    rbiodatacr:::bdcr_GET("http://0.0.0.0/nonexistent", timeout = 3)
+  )
+  expect_null(result)
+})
