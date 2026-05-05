@@ -14,7 +14,8 @@ bdcr_occurrences_batch(taxa, rows = 100, wait = 1)
 \item{wait}{Numeric. Seconds to pause between requests. Default 1.}
 }
 \value{
-Named list of tibbles, one per taxon.
+Named list of tibbles, one per taxon. If the service is unavailable
+  for a given taxon, the corresponding element will be an empty `tibble`.
 }
 \description{
 Download occurrence records for multiple taxa

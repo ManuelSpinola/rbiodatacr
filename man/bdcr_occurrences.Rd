@@ -18,7 +18,8 @@ A `tibble` with columns: `scientificName`, `vernacularName`,
   `decimalLatitude`, `decimalLongitude`, `year`, `month`,
   `basisOfRecord`, `dataResourceName`, `country`, `family`,
   `species`, `collector`, `license`, `geospatialKosher`,
-  `taxonomicKosher`.
+  `taxonomicKosher`. Returns an empty `tibble` if the service is
+  unavailable or no records are found.
 }
 \description{
 Download occurrence records from BIODATACR

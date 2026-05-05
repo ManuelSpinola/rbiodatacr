@@ -10,7 +10,8 @@ bdcr_count(taxon)
 \item{taxon}{Character. Scientific name (e.g. `"Panthera onca"`).}
 }
 \value{
-Integer with the total number of available records.
+Integer with the total number of available records, or `NA_integer_`
+  if the service is unavailable.
 }
 \description{
 Count occurrence records for a taxon
