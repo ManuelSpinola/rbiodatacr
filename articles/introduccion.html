@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rbiodatacr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,12 +86,7 @@ infrastructure.</p>
 recognized by BIODATACR and to retrieve its taxonomic identifier
 (GUID).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/bdcr_species_search.html">bdcr_species_search</a></span><span class="op">(</span><span class="st">"Panthera onca"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 7</span></span></span>
-<span><span class="co">#&gt;   name        guid  commonName scientificName rank  taxonomicStatus nameComplete</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Panthera o… 5219… <span style="color: #949494;">""</span>         Panthera onca… spec… accepted        Panthera on…</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Panthera o… 5219… <span style="color: #949494;">""</span>         Panthera onca… subs… accepted        Panthera on…</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/bdcr_species_search.html">bdcr_species_search</a></span><span class="op">(</span><span class="st">"Panthera onca"</span><span class="op">)</span></span></code></pre></div>
 <p>The function may return more than one row when both the species and
 subspecies are registered. The <code>guid</code> column contains the
 unique identifier for each taxonomic concept — useful for precise
@@ -104,8 +99,7 @@ queries.</p>
 <p>Use <code><a href="../reference/bdcr_count.html">bdcr_count()</a></code> to check how many occurrence records
 are available before downloading.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/bdcr_count.html">bdcr_count</a></span><span class="op">(</span><span class="st">"Panthera onca"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 313</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/bdcr_count.html">bdcr_count</a></span><span class="op">(</span><span class="st">"Panthera onca"</span><span class="op">)</span></span></code></pre></div>
 <p>For multiple species at once use <code><a href="../reference/bdcr_count_batch.html">bdcr_count_batch()</a></code>,
 which returns a tidy tibble with one row per species.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -117,14 +111,7 @@ which returns a tidy tibble with one row per species.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">conteos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdcr_count_batch.html">bdcr_count_batch</a></span><span class="op">(</span><span class="va">species</span><span class="op">)</span></span>
-<span><span class="va">conteos</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
-<span><span class="co">#&gt;   taxon               n_records</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Tapirus bairdii             1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Panthera onca             313</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Ara ambiguus             <span style="text-decoration: underline;">1</span>216</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Bradypus variegatus      <span style="text-decoration: underline;">4</span>151</span></span></code></pre></div>
+<span><span class="va">conteos</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -135,24 +122,7 @@ species and returns a tibble with 15 fields relevant for biodiversity
 analysis.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_jaguar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdcr_occurrences.html">bdcr_occurrences</a></span><span class="op">(</span><span class="st">"Panthera onca"</span>, rows <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">df_jaguar</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 100</span></span>
-<span><span class="co">#&gt; Columns: 15</span></span>
-<span><span class="co">#&gt; $ scientificName   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Panthera onca subsp. centralis (Mearns, 1901)"<span style="color: #949494;">, </span>"Pan…</span></span>
-<span><span class="co">#&gt; $ vernacularName   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Central American Jaguar"<span style="color: #949494;">, </span>"Jaguar Panthera onca"<span style="color: #949494;">, </span>"J…</span></span>
-<span><span class="co">#&gt; $ decimalLatitude  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 10.91970<span style="color: #949494;">, </span>9.95000<span style="color: #949494;">, </span>10.47563<span style="color: #949494;">, </span>10.68948<span style="color: #949494;">, </span>10.48542<span style="color: #949494;">, </span>10.5…</span></span>
-<span><span class="co">#&gt; $ decimalLongitude <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> -85.01460<span style="color: #949494;">, </span>-84.00000<span style="color: #949494;">, </span>-83.46852<span style="color: #949494;">, </span>-84.14154<span style="color: #949494;">, </span>-83.81592…</span></span>
-<span><span class="co">#&gt; $ year             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1993<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>2021<span style="color: #949494;">, </span>2013<span style="color: #949494;">, </span>2013<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>2013<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>2022<span style="color: #949494;">, </span>2013<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ month            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "06"<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>"12"<span style="color: #949494;">, </span>"06"<span style="color: #949494;">, </span>"04"<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>"10"<span style="color: #949494;">, </span><span style="color: #BB0000;">NA</span><span style="color: #949494;">, </span>"05"<span style="color: #949494;">, </span>"09"<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ basisOfRecord    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "PreservedSpecimen"<span style="color: #949494;">, </span>"PreservedSpecimen"<span style="color: #949494;">, </span>"HumanObser…</span></span>
-<span><span class="co">#&gt; $ dataResourceName <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Modelado de la distribución geográfica de mamíferos …</span></span>
-<span><span class="co">#&gt; $ country          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Costa Rica"<span style="color: #949494;">, </span>"Costa Rica"<span style="color: #949494;">, </span>"Costa Rica"<span style="color: #949494;">, </span>"Costa Rica…</span></span>
-<span><span class="co">#&gt; $ family           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Felidae"<span style="color: #949494;">, </span>"Felidae"<span style="color: #949494;">, </span>"Felidae"<span style="color: #949494;">, </span>"Felidae"<span style="color: #949494;">, </span>"Felidae"…</span></span>
-<span><span class="co">#&gt; $ species          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Panthera onca"<span style="color: #949494;">, </span>"Panthera onca"<span style="color: #949494;">, </span>"Panthera onca"<span style="color: #949494;">, </span>"P…</span></span>
-<span><span class="co">#&gt; $ collector        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "NO DISPONIBLE"<span style="color: #949494;">, </span>"Ch. d'Eternod"<span style="color: #949494;">, </span>"UACFel (SINAC-Pant…</span></span>
-<span><span class="co">#&gt; $ license          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "other"<span style="color: #949494;">, </span>"other"<span style="color: #949494;">, </span>"other"<span style="color: #949494;">, </span>"other"<span style="color: #949494;">, </span>"other"<span style="color: #949494;">, </span>"other"<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ geospatialKosher <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">,</span>…</span></span>
-<span><span class="co">#&gt; $ taxonomicKosher  <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span> TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">, </span>TRUE<span style="color: #949494;">,</span>…</span></span></code></pre></div>
+<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">df_jaguar</span><span class="op">)</span></span></code></pre></div>
 <p>For multiple species use <code><a href="../reference/bdcr_occurrences_batch.html">bdcr_occurrences_batch()</a></code>, which
 returns a named list of tibbles — one per species.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -164,9 +134,7 @@ returns a named list of tibbles — one per species.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Number of records per species</span></span>
-<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map_int</a></span><span class="op">(</span><span class="va">lista_occ</span>, <span class="va">nrow</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       Panthera onca        Ara ambiguus Bradypus variegatus </span></span>
-<span><span class="co">#&gt;                 100                 100                 100</span></span></code></pre></div>
+<span><span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map_int</a></span><span class="op">(</span><span class="va">lista_occ</span>, <span class="va">nrow</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -205,18 +173,13 @@ column to the occurrences tibble. Possible flags are:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_qc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/bdcr_quality_check.html">bdcr_quality_check</a></span><span class="op">(</span><span class="va">df_jaguar</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">df_qc</span>, <span class="va">quality_flag</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
-<span><span class="co">#&gt;   quality_flag     n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> ok             100</span></span></code></pre></div>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">df_qc</span>, <span class="va">quality_flag</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Keep only clean records:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_clean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">df_qc</span>, <span class="va">quality_flag</span> <span class="op">==</span> <span class="st">"ok"</span>,</span>
 <span>                         <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">decimalLatitude</span><span class="op">)</span>,</span>
 <span>                         <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">decimalLongitude</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df_clean</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 100</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df_clean</span><span class="op">)</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -248,7 +211,6 @@ records over Costa Rica.</p>
 <span>    y <span class="op">=</span> <span class="st">"Latitude"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="introduccion_files/figure-html/map-1.png" class="r-plt" alt="" width="672"></p>
 <hr>
 </div>
 <div class="section level2">
@@ -281,13 +243,7 @@ records over Costa Rica.</p>
 <span><span class="co"># 5. Summary</span></span>
 <span><span class="va">df_final</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">taxon</span>, sort <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>clean_records <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
-<span><span class="co">#&gt;   taxon               clean_records</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Panthera onca                 200</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Ara ambiguus                  199</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Bradypus variegatus           199</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>clean_records <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

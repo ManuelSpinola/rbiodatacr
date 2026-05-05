@@ -11,23 +11,25 @@ Rica).
 ## Installation
 
 ``` r
+
 remotes::install_github("ManuelSpinola/rbiodatacr")
 ```
 
 ## Main functions
 
-| Function                                                                                                     | Description                                   |
-|--------------------------------------------------------------------------------------------------------------|-----------------------------------------------|
-| [`bdcr_count()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count.md)                         | Count available records for a taxon           |
-| [`bdcr_count_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count_batch.md)             | Count records for multiple taxa               |
-| [`bdcr_occurrences()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences.md)             | Download occurrence records for a taxon       |
+| Function | Description |
+|----|----|
+| [`bdcr_count()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count.md) | Count available records for a taxon |
+| [`bdcr_count_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_count_batch.md) | Count records for multiple taxa |
+| [`bdcr_occurrences()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences.md) | Download occurrence records for a taxon |
 | [`bdcr_occurrences_batch()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_occurrences_batch.md) | Download occurrence records for multiple taxa |
-| [`bdcr_species_search()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_species_search.md)       | Search taxonomic information in the BIE index |
-| [`bdcr_quality_check()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_quality_check.md)         | Evaluate record quality and assign flags      |
+| [`bdcr_species_search()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_species_search.md) | Search taxonomic information in the BIE index |
+| [`bdcr_quality_check()`](https://manuelspinola.github.io/rbiodatacr/reference/bdcr_quality_check.md) | Evaluate record quality and assign flags |
 
 ## Basic usage
 
 ``` r
+
 library(rbiodatacr)
 
 # Check data availability
@@ -35,12 +37,14 @@ bdcr_count("Panthera onca")
 ```
 
 ``` r
+
 # Download occurrence records
 df <- bdcr_occurrences("Panthera onca", rows = 50)
 dplyr::glimpse(df)
 ```
 
 ``` r
+
 # Query for multiple species
 species <- c("Tapirus bairdii", "Panthera onca", "Ara ambiguus")
 counts  <- bdcr_count_batch(species)
@@ -48,6 +52,7 @@ counts
 ```
 
 ``` r
+
 # Quality control
 df_qc <- bdcr_quality_check(df)
 dplyr::count(df_qc, quality_flag, sort = TRUE)
@@ -56,6 +61,7 @@ dplyr::count(df_qc, quality_flag, sort = TRUE)
 ## Complete workflow
 
 ``` r
+
 library(rbiodatacr)
 library(dplyr)
 

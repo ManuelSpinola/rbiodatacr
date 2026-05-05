@@ -23,6 +23,8 @@ bdcr_species_search(name, rows = 10)
 
 A \`tibble\` with columns: \`name\`, \`guid\`, \`commonName\`,
 \`scientificName\`, \`rank\`, \`taxonomicStatus\`, \`nameComplete\`.
+Returns an empty \`tibble\` if the service is unavailable or no results
+are found.
 
 ## Examples
 

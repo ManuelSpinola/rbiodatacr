@@ -16,7 +16,8 @@ bdcr_count(taxon)
 
 ## Value
 
-Integer with the total number of available records.
+Integer with the total number of available records, or \`NA_integer\_\`
+if the service is unavailable.
 
 ## Examples
 

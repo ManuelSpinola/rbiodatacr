@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rbiodatacr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,10 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="rbiodatacr-011">rbiodatacr 0.1.1<a class="anchor" aria-label="anchor" href="#rbiodatacr-011"></a></h2>
+<ul><li>Fixed graceful failure when the BIODATACR API is unavailable or returns a non-200 HTTP status. Functions now return an empty tibble or <code>NA_integer_</code> with an informative message instead of throwing an error, in compliance with CRAN policy on internet resources.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="rbiodatacr-010">rbiodatacr 0.1.0<a class="anchor" aria-label="anchor" href="#rbiodatacr-010"></a></h2><p class="text-muted">CRAN release: 2026-04-29</p>
 <ul><li>First release on CRAN.</li>
 <li>
@@ -48,7 +52,8 @@
 <li>
 <code><a href="../reference/bdcr_quality_check.html">bdcr_quality_check()</a></code>: evaluate record quality and assign flags.</li>
 </ul></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

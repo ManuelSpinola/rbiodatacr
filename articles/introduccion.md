@@ -9,6 +9,7 @@ CONAGEBIO. The platform is built on the [Atlas of Living Australia
 (ALA)](https://www.ala.org.au/) API infrastructure.
 
 ``` r
+
 library(rbiodatacr)
 library(dplyr)
 library(sf)
@@ -25,12 +26,8 @@ to verify that the species name is recognized by BIODATACR and to
 retrieve its taxonomic identifier (GUID).
 
 ``` r
+
 bdcr_species_search("Panthera onca")
-#> # A tibble: 2 × 7
-#>   name        guid  commonName scientificName rank  taxonomicStatus nameComplete
-#>   <chr>       <chr> <chr>      <chr>          <chr> <chr>           <chr>       
-#> 1 Panthera o… 5219… ""         Panthera onca… spec… accepted        Panthera on…
-#> 2 Panthera o… 5219… ""         Panthera onca… subs… accepted        Panthera on…
 ```
 
 The function may return more than one row when both the species and
@@ -46,8 +43,8 @@ Use
 to check how many occurrence records are available before downloading.
 
 ``` r
+
 bdcr_count("Panthera onca")
-#> [1] 313
 ```
 
 For multiple species at once use
@@ -55,6 +52,7 @@ For multiple species at once use
 which returns a tidy tibble with one row per species.
 
 ``` r
+
 species <- c(
   "Tapirus bairdii",
   "Panthera onca",
@@ -64,13 +62,6 @@ species <- c(
 
 conteos <- bdcr_count_batch(species)
 conteos
-#> # A tibble: 4 × 2
-#>   taxon               n_records
-#>   <chr>                   <int>
-#> 1 Tapirus bairdii             1
-#> 2 Panthera onca             313
-#> 3 Ara ambiguus             1216
-#> 4 Bradypus variegatus      4151
 ```
 
 ------------------------------------------------------------------------
@@ -82,25 +73,9 @@ downloads records for a single species and returns a tibble with 15
 fields relevant for biodiversity analysis.
 
 ``` r
+
 df_jaguar <- bdcr_occurrences("Panthera onca", rows = 100)
 glimpse(df_jaguar)
-#> Rows: 100
-#> Columns: 15
-#> $ scientificName   <chr> "Panthera onca subsp. centralis (Mearns, 1901)", "Pan…
-#> $ vernacularName   <chr> "Central American Jaguar", "Jaguar Panthera onca", "J…
-#> $ decimalLatitude  <dbl> 10.91970, 9.95000, 10.47563, 10.68948, 10.48542, 10.5…
-#> $ decimalLongitude <dbl> -85.01460, -84.00000, -83.46852, -84.14154, -83.81592…
-#> $ year             <int> 1993, NA, 2021, 2013, 2013, NA, 2013, NA, 2022, 2013,…
-#> $ month            <chr> "06", NA, "12", "06", "04", NA, "10", NA, "05", "09",…
-#> $ basisOfRecord    <chr> "PreservedSpecimen", "PreservedSpecimen", "HumanObser…
-#> $ dataResourceName <chr> "Modelado de la distribución geográfica de mamíferos …
-#> $ country          <chr> "Costa Rica", "Costa Rica", "Costa Rica", "Costa Rica…
-#> $ family           <chr> "Felidae", "Felidae", "Felidae", "Felidae", "Felidae"…
-#> $ species          <chr> "Panthera onca", "Panthera onca", "Panthera onca", "P…
-#> $ collector        <chr> "NO DISPONIBLE", "Ch. d'Eternod", "UACFel (SINAC-Pant…
-#> $ license          <chr> "other", "other", "other", "other", "other", "other",…
-#> $ geospatialKosher <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,…
-#> $ taxonomicKosher  <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,…
 ```
 
 For multiple species use
@@ -108,6 +83,7 @@ For multiple species use
 which returns a named list of tibbles — one per species.
 
 ``` r
+
 spp_with_data <- filter(conteos, n_records >= 10)
 
 lista_occ <- bdcr_occurrences_batch(
@@ -117,8 +93,6 @@ lista_occ <- bdcr_occurrences_batch(
 
 # Number of records per species
 purrr::map_int(lista_occ, nrow)
-#>       Panthera onca        Ara ambiguus Bradypus variegatus 
-#>                 100                 100                 100
 ```
 
 ------------------------------------------------------------------------
@@ -138,23 +112,20 @@ are:
 | `"old_record"`       | Year before minimum threshold (default 1950) |
 
 ``` r
+
 df_qc <- bdcr_quality_check(df_jaguar)
 
 count(df_qc, quality_flag, sort = TRUE)
-#> # A tibble: 1 × 2
-#>   quality_flag     n
-#>   <chr>        <int>
-#> 1 ok             100
 ```
 
 Keep only clean records:
 
 ``` r
+
 df_clean <- filter(df_qc, quality_flag == "ok",
                          !is.na(decimalLatitude),
                          !is.na(decimalLongitude))
 nrow(df_clean)
-#> [1] 100
 ```
 
 ------------------------------------------------------------------------
@@ -165,6 +136,7 @@ Convert the clean tibble to an `sf` object and plot the records over
 Costa Rica.
 
 ``` r
+
 # Convert to sf
 df_sf <- st_as_sf(
   df_clean,
@@ -190,13 +162,12 @@ ggplot() +
   theme_minimal()
 ```
 
-![](introduccion_files/figure-html/map-1.png)
-
 ------------------------------------------------------------------------
 
 ## 6. Complete workflow
 
 ``` r
+
 # 1. Check availability
 species <- c("Tapirus bairdii", "Panthera onca",
              "Ara ambiguus",    "Bradypus variegatus")
@@ -224,10 +195,4 @@ df_final <- bind_rows(lista_limpia, .id = "taxon") |>
 df_final |>
   count(taxon, sort = TRUE) |>
   rename(clean_records = n)
-#> # A tibble: 3 × 2
-#>   taxon               clean_records
-#>   <chr>                       <int>
-#> 1 Panthera onca                 200
-#> 2 Ara ambiguus                  199
-#> 3 Bradypus variegatus           199
 ```

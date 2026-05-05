@@ -24,7 +24,8 @@ bdcr_occurrences_batch(taxa, rows = 100, wait = 1)
 
 ## Value
 
-Named list of tibbles, one per taxon.
+Named list of tibbles, one per taxon. If the service is unavailable for
+a given taxon, the corresponding element will be an empty \`tibble\`.
 
 ## Examples
 
