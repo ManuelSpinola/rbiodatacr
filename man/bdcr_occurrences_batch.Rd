@@ -4,14 +4,21 @@
 \alias{bdcr_occurrences_batch}
 \title{Download occurrence records for multiple taxa}
 \usage{
-bdcr_occurrences_batch(taxa, rows = 100, wait = 1)
+bdcr_occurrences_batch(taxa, rows = 100, page_size = 300, wait = 1)
 }
 \arguments{
 \item{taxa}{Character vector. Scientific names.}
 
-\item{rows}{Integer. Records per taxon. Default 100.}
+\item{rows}{Integer. Maximum records per taxon. Default 100,
+matching [bdcr_occurrences()]. Pass `Inf` to download every
+available record for each taxon; a message will report the true
+total for any taxon where the download is capped below it.}
 
-\item{wait}{Numeric. Seconds to pause between requests. Default 1.}
+\item{page_size}{Integer. Records requested per HTTP call within each
+taxon's pagination. Default 300.}
+
+\item{wait}{Numeric. Seconds to pause between requests (both
+between taxa and between pages within a taxon). Default 1.}
 }
 \value{
 Named list of tibbles, one per taxon. If the service is unavailable
@@ -24,5 +31,6 @@ Download occurrence records for multiple taxa
 \dontrun{
 spp <- c("Tapirus bairdii", "Panthera onca")
 bdcr_occurrences_batch(spp, rows = 50)
+bdcr_occurrences_batch(spp, rows = Inf)  # descarga todos los registros
 }
 }
