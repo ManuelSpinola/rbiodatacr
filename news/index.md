@@ -1,5 +1,11 @@
 # Changelog
 
+## rbiodatacr 0.1.2
+
+- Resubmission to CRAN; no functional changes from the previous version.
+  Version bumped from 0.1.1 to 0.1.2 to resolve a CRAN incoming check
+  conflict (insufficient version increment).
+
 ## rbiodatacr 0.1.1
 
 CRAN release: 2026-05-05
