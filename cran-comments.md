@@ -1,22 +1,18 @@
 ## Resubmission
 
-This is an update to the version currently on CRAN (0.1.0), fixing two bugs:
-
-* `bdcr_occurrences()` and `bdcr_occurrences_batch()` were silently
-  truncating results at 100 records regardless of how many records were
-  actually available for a given taxon. Both functions now paginate
-  correctly to retrieve the requested number of records (or all of them,
-  via `rows = Inf`), using the taxon's true record count to know when to
-  stop. When the download is capped below the true total, an informative
-  message reports it, so results are never mistaken for the complete
-  dataset.
-* `bdcr_occurrences_batch()` progress messages repeated the last taxon's
-  name and status for every step instead of reporting each taxon
-  correctly.
-
-No user-facing API changes, deprecations, or new dependencies were
-introduced.
+This is a resubmission. The previous submission (version 0.1.1, which
+included fixes for graceful API failure handling, pagination, and batch
+progress messages) was flagged by CRAN's automatic incoming check as an
+insufficient version increment relative to a prior submission with the
+same version number. This submission (version 0.1.2) contains no
+functional changes beyond the version bump; see NEWS.md for the full
+list of changes introduced in 0.1.1.
 
 ## R CMD check results
 
 0 errors | 0 warnings | 0 notes
+
+## Test environments
+
+* win-builder (devel and release)
+* local: macOS Tahoe 26.5.2 (aarch64-apple-darwin23), R 4.6.0
